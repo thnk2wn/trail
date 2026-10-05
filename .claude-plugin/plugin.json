@@ -1,0 +1,98 @@
+{
+  "name": "trail",
+  "version": "0.2.9",
+  "description": "Session sidebar of the Jira tickets, PRs, GitHub Actions runs, incidents and docs a session created, changed or mentioned (plus TeamCity builds if you use it), as clickable links, and a status row (model, branch, context, rate limit, resumable session id).",
+  "author": {
+    "name": "Geoff Hudik",
+    "url": "https://github.com/thnk2wn"
+  },
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "accent": {
+      "type": "string",
+      "title": "Accent color",
+      "description": "Accent color for the status strip and sidebar",
+      "default": "blue",
+      "options": [
+        "blue",
+        "orange",
+        "teal",
+        "green",
+        "lavender",
+        "rose",
+        "gold",
+        "slate",
+        "cyan",
+        "gray"
+      ]
+    },
+    "atlassianServer": {
+      "type": "string",
+      "title": "Atlassian MCP server",
+      "description": "Name of the Atlassian MCP server as /mcp lists it. Used for Jira titles only when your permission rules allow its searchJiraIssuesUsingJql tool.",
+      "default": "claude.ai Atlassian"
+    },
+    "githubOrg": {
+      "type": "string",
+      "title": "GitHub org",
+      "description": "Org whose PRs show as 'repo #N' without the owner. Empty: the session repo's owner.",
+      "default": ""
+    },
+    "incidentOrg": {
+      "type": "string",
+      "title": "incident.io org slug",
+      "description": "incident.io org slug for INC-<n> links. Empty: detected through the incident.io connector when it is allowed; otherwise incidents are off.",
+      "default": ""
+    },
+    "jiraBaseUrl": {
+      "type": "string",
+      "title": "Jira base URL",
+      "description": "Site that ticket keys link to, e.g. https://acme.atlassian.net. Empty: detected from the jira CLI config or the Atlassian connector.",
+      "default": ""
+    },
+    "jiraProjects": {
+      "type": "string",
+      "title": "Jira project keys",
+      "description": "Comma-separated project keys to recognize. Empty: the projects your Jira site shows you (jira CLI or Atlassian connector).",
+      "default": ""
+    },
+    "sectionLimits": {
+      "type": "string",
+      "title": "Section limits",
+      "description": "Items shown per sidebar section before '+N more' (starred items always show): jira, pr, inc, run (GitHub Actions), build (TeamCity), doc",
+      "default": "jira=5,pr=5,inc=5,run=3,build=3,doc=5"
+    },
+    "sounds": {
+      "type": "boolean",
+      "title": "Sounds",
+      "description": "Short chimes with the pop-ups: created, merged or build succeeded, and build failed (macOS; other platforms stay silent)",
+      "default": true
+    },
+    "statusStyle": {
+      "type": "string",
+      "title": "Status line",
+      "description": "band: colored, clickable row just above the prompt (folder opens Finder, ⧉ copies the resume command, 🔗 toggles the sidebar); bottom: plain, unclickable line under the prompt; off: no status row, sidebar only (keeps your own status line)",
+      "default": "band",
+      "options": [
+        "bottom",
+        "band",
+        "off"
+      ]
+    },
+    "teamcityUrl": {
+      "type": "string",
+      "title": "TeamCity URL",
+      "description": "Only if you use TeamCity: the server build ids link to. Empty: the server the teamcity CLI is logged in to; without that CLI, TeamCity stays off.",
+      "default": ""
+    },
+    "toastSeconds": {
+      "type": "number",
+      "title": "Pop-up seconds",
+      "description": "How long notification pop-ups stay on screen (2-60). The latest one also stays clickable in the status row until your next message.",
+      "default": 8
+    }
+  },
+  "homepage": "https://github.com/thnk2wn/trail",
+  "repository": "https://github.com/thnk2wn/trail",
+  "license": "MIT"
+}

@@ -1,0 +1,415 @@
+{
+ "toastSeconds": 6,
+ "status": {
+  "dir": "search-indexer",
+  "repo": "acme/search-indexer",
+  "git": {
+   "branch": "MAIL-219-paging",
+   "changed": 2,
+   "ahead": 1,
+   "behind": 0,
+   "hasUpstream": true
+  },
+  "sessionId": "7c41e2a9-3d5b-4f0e-9a61-0b8e5c2d4f17",
+  "contextPercent": 38,
+  "contextWindow": 1000000,
+  "fiveHourPercent": 23,
+  "fiveHourResetsInMinutes": 134,
+  "ageMinutes": 1600
+ },
+ "refs": [
+  {
+   "kind": "jira",
+   "label": "MAIL-214",
+   "href": "https://acme.atlassian.net/browse/MAIL-214",
+   "title": "BE: Fetch Office 365 email bodies from Graph on demand, with cache and authorization",
+   "role": "updated",
+   "ago": 6,
+   "isStarred": true
+  },
+  {
+   "kind": "jira",
+   "label": "MAIL-203",
+   "href": "https://acme.atlassian.net/browse/MAIL-203",
+   "title": "Index Office 365 email in its own search index, read alongside existing mail",
+   "role": "updated",
+   "ago": 14,
+   "isStarred": false
+  },
+  {
+   "kind": "jira",
+   "label": "MAIL-241",
+   "href": "https://acme.atlassian.net/browse/MAIL-241",
+   "title": "Office 365: stop indexing app-sent BCC copies (duplicate emails in History)",
+   "role": "created",
+   "ago": 31,
+   "isStarred": false
+  },
+  {
+   "kind": "jira",
+   "label": "MAIL-243",
+   "href": "https://acme.atlassian.net/browse/MAIL-243",
+   "title": "FE: Open full emails from contact History (Timeline and Sections)",
+   "role": "created",
+   "ago": 48,
+   "isStarred": false
+  },
+  {
+   "kind": "jira",
+   "label": "MAIL-219",
+   "href": "https://acme.atlassian.net/browse/MAIL-219",
+   "title": "Stop the Office 365 nightly import from skipping mail when a mailbox has more than 200 new messages",
+   "role": "mentioned",
+   "ago": 65,
+   "isStarred": false
+  },
+  {
+   "kind": "jira",
+   "label": "MAIL-212",
+   "href": "https://acme.atlassian.net/browse/MAIL-212",
+   "title": "Stored Graph message IDs break when mail is moved: adopt immutable IDs and a fallback",
+   "role": "mentioned",
+   "ago": 90,
+   "isStarred": false
+  },
+  {
+   "kind": "jira",
+   "label": "MAIL-207",
+   "href": "https://acme.atlassian.net/browse/MAIL-207",
+   "title": "Email access list lost manager visibility: restore owner plus managers",
+   "role": "updated",
+   "ago": 120,
+   "isStarred": false
+  },
+  {
+   "kind": "jira",
+   "label": "MAIL-205",
+   "href": "https://acme.atlassian.net/browse/MAIL-205",
+   "title": "Restore Office 365 email in the contact activity index",
+   "role": "updated",
+   "ago": 150,
+   "isStarred": false
+  },
+  {
+   "kind": "jira",
+   "label": "MAIL-216",
+   "href": "https://acme.atlassian.net/browse/MAIL-216",
+   "title": "Office 365 subscriptions: reconcile against Graph, alert on delivery loss, log renewals",
+   "role": "mentioned",
+   "ago": 200,
+   "isStarred": false
+  },
+  {
+   "kind": "jira",
+   "label": "MAIL-210",
+   "href": "https://acme.atlassian.net/browse/MAIL-210",
+   "title": "Narrow Office 365 ingestion to mail matching a known contact or account",
+   "role": "mentioned",
+   "ago": 260,
+   "isStarred": false
+  },
+  {
+   "kind": "jira",
+   "label": "MAIL-211",
+   "href": "https://acme.atlassian.net/browse/MAIL-211",
+   "title": "Replace the stored email body preview with an AI summary, and add a redacted subject",
+   "role": "mentioned",
+   "ago": 300,
+   "isStarred": false
+  },
+  {
+   "kind": "jira",
+   "label": "MAIL-196",
+   "href": "https://acme.atlassian.net/browse/MAIL-196",
+   "title": "Add end-to-end health signals for Office 365 email ingestion",
+   "role": "mentioned",
+   "ago": 340,
+   "isStarred": false
+  },
+  {
+   "kind": "jira",
+   "label": "MAIL-201",
+   "href": "https://acme.atlassian.net/browse/MAIL-201",
+   "title": "Office 365 email ingestion: recovery, integrity and scope",
+   "role": "updated",
+   "ago": 400,
+   "isStarred": false
+  },
+  {
+   "kind": "pr",
+   "label": "acme-api #873",
+   "href": "https://github.com/acme/acme-api/pull/873",
+   "title": "MAIL-214: emailDetails with on-demand Office 365 bodies from Graph",
+   "role": "created",
+   "ago": 7,
+   "isStarred": true
+  },
+  {
+   "kind": "pr",
+   "label": "search-indexer #192",
+   "href": "https://github.com/acme/search-indexer/pull/192",
+   "title": "MAIL-203: importer writes to the new mail index too",
+   "role": "created",
+   "ago": 15,
+   "isStarred": false
+  },
+  {
+   "kind": "pr",
+   "label": "acme-core #612",
+   "href": "https://github.com/acme/acme-core/pull/612",
+   "title": "MAIL-203: give Office 365 email its own search index",
+   "role": "created",
+   "ago": 18,
+   "isStarred": false
+  },
+  {
+   "kind": "pr",
+   "label": "acme-core #614",
+   "href": "https://github.com/acme/acme-core/pull/614",
+   "title": "MAIL-203: log Office 365 email rebuild progress; batch 5,000",
+   "role": "created",
+   "ago": 22,
+   "isStarred": false
+  },
+  {
+   "kind": "pr",
+   "label": "search-indexer #190",
+   "href": "https://github.com/acme/search-indexer/pull/190",
+   "title": "MAIL-203: add a full rebuild mode for the mail index",
+   "role": "created",
+   "ago": 26,
+   "isStarred": false
+  },
+  {
+   "kind": "pr",
+   "label": "acme-schema #426",
+   "href": "https://github.com/acme/acme-schema/pull/426",
+   "title": "MAIL-241: allow message_kind app_copy; add email_ses_message",
+   "role": "created",
+   "ago": 33,
+   "isStarred": false
+  },
+  {
+   "kind": "pr",
+   "label": "acme-web #1657",
+   "href": "https://github.com/acme/acme-web/pull/1657",
+   "title": "MAIL-243: open emails from contact History",
+   "role": "created",
+   "ago": 50,
+   "isStarred": false
+  },
+  {
+   "kind": "pr",
+   "label": "acme-api #867",
+   "href": "https://github.com/acme/acme-api/pull/867",
+   "title": "MAIL-203: History shows Office 365 email; respect shared-mailbox access",
+   "role": "created",
+   "ago": 70,
+   "isStarred": false
+  },
+  {
+   "kind": "pr",
+   "label": "acme-core #608",
+   "href": "https://github.com/acme/acme-core/pull/608",
+   "title": "MAIL-207: give managers back access to their team's email",
+   "role": "created",
+   "ago": 125,
+   "isStarred": false
+  },
+  {
+   "kind": "pr",
+   "label": "search-indexer #187",
+   "href": "https://github.com/acme/search-indexer/pull/187",
+   "title": "MAIL-205: index Office 365 email in contact activity; add a backfill mode",
+   "role": "created",
+   "ago": 155,
+   "isStarred": false
+  },
+  {
+   "kind": "pr",
+   "label": "cdc-consumer #50",
+   "href": "https://github.com/acme/cdc-consumer/pull/50",
+   "title": "Keep message thread fields in CDC writes",
+   "role": "updated",
+   "ago": 180,
+   "isStarred": false
+  },
+  {
+   "kind": "pr",
+   "label": "go-kit #141",
+   "href": "https://github.com/acme/go-kit/pull/141",
+   "title": "cache2: Store writes value and TTL atomically (SET ... EX)",
+   "role": "created",
+   "ago": 210,
+   "isStarred": false
+  },
+  {
+   "kind": "pr",
+   "label": "acme-api #850",
+   "href": "https://github.com/acme/acme-api/pull/850",
+   "title": "MAIL-209: hide Office 365 email from the old web client",
+   "role": "mentioned",
+   "ago": 320,
+   "isStarred": false
+  },
+  {
+   "kind": "inc",
+   "label": "INC-142",
+   "href": "https://app.incident.io/acme/incidents/142",
+   "title": "Office 365 email missing from contact History · Resolved",
+   "role": "mentioned",
+   "ago": 240
+  },
+  {
+   "kind": "build",
+   "label": "SearchIndexer_Deploy #1.4.212",
+   "href": "https://tc.acme.dev/viewLog.html?buildId=110354",
+   "title": "✓ Success · main",
+   "role": "mentioned",
+   "ago": 12
+  },
+  {
+   "kind": "build",
+   "label": "AcmeApi_Deploy_UAT #3.9.401",
+   "href": "https://tc.acme.dev/viewLog.html?buildId=110322",
+   "title": "✗ Failed · dev",
+   "role": "mentioned",
+   "ago": 40
+  },
+  {
+   "kind": "build",
+   "label": "AcmeCore_Test #2.1.88",
+   "href": "https://tc.acme.dev/viewLog.html?buildId=108879",
+   "title": "✓ Success · dev",
+   "role": "mentioned",
+   "ago": 95
+  },
+  {
+   "kind": "build",
+   "label": "SearchIndexer_Test #1.4.211",
+   "href": "https://tc.acme.dev/viewLog.html?buildId=108734",
+   "title": "✓ Success · dev",
+   "role": "mentioned",
+   "ago": 130
+  },
+  {
+   "kind": "run",
+   "label": "acme-api run #2210",
+   "href": "https://github.com/acme/acme-api/actions/runs/10000000131",
+   "title": "✓ Claude Code Review: MAIL-214: emailDetails with on-demand bodies",
+   "role": "mentioned",
+   "ago": 8
+  },
+  {
+   "kind": "run",
+   "label": "search-indexer run #412",
+   "href": "https://github.com/acme/search-indexer/actions/runs/10000000323",
+   "title": "✓ lint: MAIL-203: importer writes to the new mail index too",
+   "role": "mentioned",
+   "ago": 16
+  },
+  {
+   "kind": "run",
+   "label": "acme-core run #918",
+   "href": "https://github.com/acme/acme-core/actions/runs/10000000640",
+   "title": "✗ test: MAIL-203: give Office 365 email its own index",
+   "role": "mentioned",
+   "ago": 20
+  },
+  {
+   "kind": "doc",
+   "label": "Office 365 email ingestion runbook",
+   "role": "created",
+   "ago": 100,
+   "href": "https://acme.atlassian.net/wiki/spaces/ENG/pages/4521984/Office+365+email+ingestion+runbook"
+  }
+ ],
+ "script": [
+  {
+   "at": 2,
+   "ref": {
+    "kind": "jira",
+    "label": "MAIL-219",
+    "href": "https://acme.atlassian.net/browse/MAIL-219",
+    "title": "Stop the Office 365 nightly import from skipping mail when a mailbox has more than 200 new messages",
+    "role": "updated",
+    "ago": 0,
+    "isStarred": false
+   }
+  },
+  {
+   "at": 4,
+   "ref": {
+    "kind": "pr",
+    "label": "search-indexer #198",
+    "href": "https://github.com/acme/search-indexer/pull/198",
+    "title": "MAIL-219: page the nightly import past 200 new messages",
+    "role": "created",
+    "ago": 0,
+    "isStarred": false
+   },
+   "toast": "🔗 PR search-indexer #198 created",
+   "href": "https://github.com/acme/search-indexer/pull/198",
+   "sound": "created"
+  },
+  {
+   "at": 7,
+   "do": "star",
+   "target": "acme-core #612"
+  },
+  {
+   "at": 11,
+   "ref": {
+    "kind": "build",
+    "label": "SearchIndexer_Test #1.4.213",
+    "href": "https://tc.acme.dev/viewLog.html?buildId=110410",
+    "title": "⏳ running · MAIL-219-paging",
+    "role": "mentioned",
+    "ago": 0
+   },
+   "toast": "🔨 TeamCity build SearchIndexer_Test starting",
+   "href": "https://tc.acme.dev/viewLog.html?buildId=110410"
+  },
+  {
+   "at": 13,
+   "do": "type",
+   "text": "graph"
+  },
+  {
+   "at": 17,
+   "do": "clear"
+  },
+  {
+   "at": 18,
+   "ref": {
+    "kind": "build",
+    "label": "SearchIndexer_Test #1.4.213",
+    "href": "https://tc.acme.dev/viewLog.html?buildId=110410",
+    "title": "✓ Success · MAIL-219-paging",
+    "role": "mentioned",
+    "ago": 0
+   },
+   "toast": "✓ TeamCity build SearchIndexer_Test #1.4.213 succeeded",
+   "href": "https://tc.acme.dev/viewLog.html?buildId=110410",
+   "sound": "merged"
+  },
+  {
+   "at": 25,
+   "toast": "🚢 PR search-indexer #198 merged",
+   "href": "https://github.com/acme/search-indexer/pull/198",
+   "sound": "merged"
+  },
+  {
+   "at": 32,
+   "do": "copyLinks"
+  },
+  {
+   "at": 38,
+   "do": "hide"
+  },
+  {
+   "at": 41,
+   "do": "show"
+  }
+ ]
+}
