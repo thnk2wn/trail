@@ -10,7 +10,7 @@
       "name": "trail",
       "source": "./",
       "description": "Session sidebar of the Jira tickets, PRs, GitHub Actions runs, incidents and docs a session created, changed or mentioned (plus TeamCity builds if you use it), as clickable links, and a status row (model, branch, context, rate limit, resumable session id).",
-      "version": "0.2.9"
+      "version": "0.2.10"
     }
   ]
 }

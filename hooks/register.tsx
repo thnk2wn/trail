@@ -1288,9 +1288,9 @@ async function playDemoStep($: $, step: DemoStep, style: StatusStyle, run: numbe
 /** Ids the last `/trail clean` hid, for `/trail clean undo` (this run of the session only). */
 let lastCleaned: string[] = []
 
-const CLEAN_USAGE = 'Usage: /trail clean <age> [--yes] hides items with no activity in that long (30m, 4h, 2d, 1w, 1d12h); /trail clean undo brings the last cleanup back.'
+const CLEAN_USAGE = 'Usage: /trail clean <age> [--yes] hides items with no activity in that long (30m, 4h, 2d, 1w, 1d12h); /trail clean all [--yes] hides everything but starred; /trail clean undo brings the last cleanup back.'
 
-/** `/trail clean <age>`: a preview, or with --yes the same as pressing × on each stale item. */
+/** `/trail clean <age>` (or `all`, every unstarred item): a preview, or with --yes the same as pressing × on each stale item. */
 async function clean($: $, words: readonly string[], style: StatusStyle): Promise<string> {
   if (words[0]?.toLowerCase() === 'undo') {
     if (lastCleaned.length === 0) {
@@ -1308,7 +1308,8 @@ async function clean($: $, words: readonly string[], style: StatusStyle): Promis
   }
 
   const age = words.find(word => !word.startsWith('-')) ?? ''
-  const ms = parseDuration(age)
+  const isAll = age.toLowerCase() === 'all'
+  const ms = isAll ? Infinity : parseDuration(age)
 
   if (ms === null) {
     return CLEAN_USAGE
@@ -1316,24 +1317,25 @@ async function clean($: $, words: readonly string[], style: StatusStyle): Promis
 
   const isYes = words.some(word => /^(--yes|-y)$/i.test(word))
   const shown = (await shownRefs($)).filter(one => !one.isDismissed)
-  const stale = staleRefs(shown, (await $.clock.now()) - ms)
+  const stale = staleRefs(shown, isAll ? Infinity : (await $.clock.now()) - ms)
   const kept = shown.length - stale.length
+  const which = isAll ? 'unstarred items' : `items not active in the last ${age}`
 
   if (stale.length === 0) {
-    return `Trail clean: every shown item was active in the last ${age} (or is starred); nothing to hide.`
+    return isAll ? 'Trail clean: every shown item is starred; nothing to hide.' : `Trail clean: every shown item was active in the last ${age} (or is starred); nothing to hide.`
   }
 
   if (!isYes) {
     const lines = [
-      `Would hide ${stale.length} of ${shown.length} items not active in the last ${age}, leaving ${kept}. Starred items are kept.`,
+      `Would hide ${stale.length} of ${shown.length} ${which}, leaving ${kept}. Starred items are kept.`,
       '',
       ...groupRefs(stale).map(([kind, refs]) => `- ${KIND_TITLE[kind]} ${refs.length}: ${refs.slice(0, 4).map(one => one.label).join(', ')}${refs.length > 4 ? ', …' : ''}`),
       '',
-      `\`/trail clean ${age} --yes\` hides them; \`/trail clean undo\` brings them back.`,
+      `\`/trail clean ${isAll ? 'all' : age} --yes\` hides them; \`/trail clean undo\` brings them back.`,
     ]
 
     // Ages rebuilt from the live message list (the transcript couldn't be read) are all about load time.
-    if (backfillSource === 'messages') {
+    if (!isAll && backfillSource === 'messages') {
       lines.push('Note: this session was rebuilt without its transcript, so older items count from when it loaded.')
     }
 
@@ -1347,7 +1349,7 @@ async function clean($: $, words: readonly string[], style: StatusStyle): Promis
   await saveMarks($, await read($, refsAtom))
   await paintStatus($, style)
 
-  return `Hid ${ids.size} items not active in the last ${age}: ${shown.length} → ${kept} shown. \`/trail clean undo\` brings them back.`
+  return `Hid ${ids.size} ${which}: ${shown.length} → ${kept} shown. \`/trail clean undo\` brings them back.`
 }
 
 /** What a pop-up calls an item, so "… created" says what was created: `PR acme-api #12`, `Jira PROJ-4`. */
@@ -1757,8 +1759,8 @@ export const register: Register = (on, options) => {
     const started = await next(e)
 
     await $.command.register({
-      argumentHint: '[md | resume | restore | status | clean <age> | demo [short|file|off] [manual]]',
-      description: 'Show or hide the Trail sidebar; `md` prints it as markdown, `resume` copies the resume command, `restore` un-hides dismissed items, `status` shows lookup state, `clean 2d` hides items idle that long, `demo` plays sample data',
+      argumentHint: '[md | resume | restore | status | clean <age>|all | demo [short|file|off] [manual]]',
+      description: 'Show or hide the Trail sidebar; `md` prints it as markdown, `resume` copies the resume command, `restore` un-hides dismissed items, `status` shows lookup state, `clean 2d` hides items idle that long (`clean all`: all but starred), `demo` plays sample data',
       name: 'trail',
     })
 
@@ -1960,7 +1962,7 @@ export const register: Register = (on, options) => {
     }
 
     if (arg !== '') {
-      return { text: `Unknown: /trail ${e.args.trim()}. Try /trail, md, resume, status, restore, clean <age> [--yes], clean undo, or demo [short|off].` }
+      return { text: `Unknown: /trail ${e.args.trim()}. Try /trail, md, resume, status, restore, clean <age>|all [--yes], clean undo, or demo [short|off].` }
     }
 
     return { text: (await togglePane($, style)) ? 'Trail shown.' : 'Trail hidden. /trail shows it again.' }

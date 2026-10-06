@@ -301,6 +301,7 @@ describe('clean', () => {
     const list = [at(10), at(50), at(5, { id: 's', isStarred: true }), at(6, { id: 'd', isDismissed: true })]
 
     expect(staleRefs(list, 20).map(one => one.id)).toEqual(['x10'])
+    expect(staleRefs(list, Infinity).map(one => one.id)).toEqual(['x10', 'x50'])
   })
 })
 

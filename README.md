@@ -64,8 +64,8 @@ TeamCity.
   and `/trail status` has the details.
 - Dismissing is permanent for the session (it survives resume and later
   mentions); `show N dismissed` or `/trail restore` brings items back.
-- Long session? `/trail clean 2d` hides everything idle for two days (see
-  [Commands](#commands)).
+- Long session? `/trail clean 2d` hides everything idle for two days, and
+  `/trail clean all` everything you haven't starred (see [Commands](#commands)).
 - The trail keeps up to 300 items per session. Past that, dismissed and
   mention-only items drop first; starred, created and edited ones are kept.
 - Section headers (`▾ Jira 33`) collapse and expand their section; the choice
@@ -98,7 +98,8 @@ TeamCity.
 | `/trail status` | Where each setting came from, which lookups work (Jira, `gh`, TeamCity, incident.io) and their last errors, and how the trail was rebuilt on load. |
 | `/trail restore` | Bring back every dismissed item. |
 | `/trail clean <age>` | Preview hiding every unstarred item with no activity (no create, edit or mention) in that long, with counts per section. Ages: `30m`, `4h`, `2d`, `1w`, or combined like `1d12h`. |
-| `/trail clean <age> --yes` | Hide them (`-y` works too), the same as pressing × on each, and report the counts before and after. |
+| `/trail clean all` | Preview hiding every unstarred item, whatever its age: star what you're working on, then clear the rest of what a search turned up. |
+| `/trail clean <age>\|all --yes` | Hide them (`-y` works too), the same as pressing × on each, and report the counts before and after. |
 | `/trail clean undo` | Bring back what the last cleanup hid (until the session restarts; `/trail restore` brings back everything). |
 | `/trail demo [short]` | Play sample data in the sidebar (`/trail demo off` ends it). |
 
