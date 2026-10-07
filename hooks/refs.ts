@@ -289,13 +289,15 @@ export function bashRefs(command: string, output: string, cfg: TrailConfig, repo
   found.push(...teamcityRefs(command, output, cfg))
 
   // `gh run list` is ignored, as `teamcity run list` is: it lists everything.
+  // Ids fed through a loop (`for id in 1 2; do gh run watch $id`) count, as they do for teamcity.
   for (const m of command.matchAll(GH_RUN_CMD)) {
     const args = m[2] ?? ''
     const id = buildIdArg(args)
-    const repo = id ? repoFor(command, args, cfg, repoHint) : null
+    const ids = id ? [id] : /^[^"']*\$\w/.test(args) ? shellLoopIds(command) : []
+    const repo = ids.length > 0 ? repoFor(command, args, cfg, repoHint) : null
 
-    if (id && repo) {
-      found.push(ghRunRef(cfg, repo[0], repo[1], id, m[1] === 'rerun' || m[1] === 'cancel' ? 'updated' : 'mentioned'))
+    for (const each of repo ? ids : []) {
+      found.push(ghRunRef(cfg, (repo as [string, string])[0], (repo as [string, string])[1], each, m[1] === 'rerun' || m[1] === 'cancel' ? 'updated' : 'mentioned'))
     }
   }
 
@@ -360,6 +362,11 @@ const TC_RUN = /\bteamcity\s+run\s+(view|show|log|watch|cancel|restart|pin|unpin
 const TC_REST_BUILD = /\/builds\/id:(\d{3,})/g
 const SHELL_LOOP = /\bfor\s+\w+\s+in\s+([\d\s]+?)\s*;\s*do\b/g
 
+/** Numeric ids a command feeds through a shell loop (`for r in 110 111; do …`). */
+export function shellLoopIds(command: string): string[] {
+  return [...command.matchAll(SHELL_LOOP)].flatMap(m => (m[1] ?? '').trim().split(/\s+/).filter(id => /^\d{3,}$/.test(id)))
+}
+
 /**
  * Builds a command names through the teamcity CLI: `run view|log|watch <id>`
  * (and cancel/restart, which change it), REST paths `…/builds/id:<id>`, ids fed
@@ -372,7 +379,7 @@ export function teamcityRefs(command: string, output: string, cfg: TrailConfig):
   }
 
   const found: Found[] = []
-  const loopIds = [...command.matchAll(SHELL_LOOP)].flatMap(m => (m[1] ?? '').trim().split(/\s+/).filter(id => /^\d{3,}$/.test(id)))
+  const loopIds = shellLoopIds(command)
 
   for (const m of command.matchAll(TC_RUN)) {
     const role: TrailRole = m[1] === 'cancel' || m[1] === 'restart' ? 'updated' : 'mentioned'

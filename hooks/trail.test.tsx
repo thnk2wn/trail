@@ -153,6 +153,10 @@ describe('Actions runs', () => {
     expect(runs('gh run rerun 12345678901 -R acme/api --failed')).toEqual(['updated:api run 12345678901'])
     expect(runs('gh api repos/acme/web/actions/runs/123456789/jobs')).toEqual(['mentioned:web run 123456789'])
     expect(runs('gh run list -R acme/api --limit 3')).toEqual([])
+    expect(runs('cd ~/src/web && for id in 37678512886 37678513022; do gh run watch $id --exit-status >/dev/null 2>&1; echo "$id done"; done')).toEqual([
+      'mentioned:web run 37678512886',
+      'mentioned:web run 37678513022',
+    ])
     expect(runs('gh api -X POST repos/acme/api/actions/runs/123456789/rerun')).toEqual(['updated:api run 123456789'])
     expect(findRefs('https://github.com/acme/api/actions/runs/123456', CFG)[0]?.kind).toBe('run')
   })
