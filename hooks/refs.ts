@@ -716,9 +716,10 @@ export function visibleRefs(list: readonly TrailRef[], canVerifyJira: boolean, c
       return !(canVerify.incident && one.title === undefined)
     }
 
-    // A PR shows while its lookup is pending, but not once gh said it doesn't exist.
+    // A PR shows while its lookup is pending, but not once gh said it doesn't exist
+    // (a lookup that failed because gh isn't installed said nothing).
     if (one.kind === 'pr') {
-      return !(one.isTitleTried === true && one.title === undefined)
+      return !(canVerify.gh && one.isTitleTried === true && one.title === undefined)
     }
 
     return true

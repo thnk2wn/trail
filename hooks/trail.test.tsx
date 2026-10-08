@@ -217,6 +217,7 @@ describe('mergeRefs', () => {
     )
 
     expect(visibleRefs(list, true).map(r => r.label)).toEqual(['a #7', 'a #8'])
+    expect(visibleRefs(list, true, { gh: false, incident: true, teamcity: true }).map(r => r.label)).toEqual(['a #7', 'a #8', 'a #9'])
   })
 
   test('a Confluence link ending a sentence drops the full stop', async () => {
