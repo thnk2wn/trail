@@ -158,7 +158,8 @@ export function findRefs(text: string, cfg: TrailConfig, role: TrailRole = 'ment
   }
 
   for (const m of text.matchAll(CONFLUENCE)) {
-    const slug = m[4]
+    // A link ending a sentence carries its full stop (`…/Incident.io+Response.`).
+    const slug = m[4]?.replace(/[.,;:!?]+$/, '') || undefined
     const title = titleFromSlug(slug)
 
     add({
@@ -313,9 +314,23 @@ export function bashRefs(command: string, output: string, cfg: TrailConfig, repo
     found.push(prRef(cfg, (m[1] ?? ''), (m[2] ?? ''), (m[3] ?? ''), isWrite ? 'updated' : 'mentioned'))
   }
 
-  found.push(...findRefs(command, cfg))
+  // Anything else a command spells is a mention, unless its number is a stand-in
+  // (`attach.sh INC-1 https://x`, `…/pull/999`): trying a script out, not naming work.
+  found.push(...findRefs(command, cfg).filter(one => !isPlaceholder(one)))
 
   return found
+}
+
+/** Numbers that stand in for a real one in examples and trial runs: 0, 1, 12, 123…, 42, 99, 999…. */
+const PLACEHOLDER_NUMBER = /^(?:0|1|12|123|1234|12345|123456|42|9{2,6})$/
+
+/** A PR, incident or Jira key whose number is a stand-in. */
+export function isPlaceholder(one: Found): boolean {
+  if (one.kind !== 'pr' && one.kind !== 'inc' && one.kind !== 'jira') {
+    return false
+  }
+
+  return PLACEHOLDER_NUMBER.test(/(\d+)$/.exec(one.id)?.[1] ?? '')
 }
 
 /** Heredoc bodies are file contents (scripts, fixtures, tests), not references the session made. */
@@ -699,6 +714,11 @@ export function visibleRefs(list: readonly TrailRef[], canVerifyJira: boolean, c
 
     if (one.kind === 'inc') {
       return !(canVerify.incident && one.title === undefined)
+    }
+
+    // A PR shows while its lookup is pending, but not once gh said it doesn't exist.
+    if (one.kind === 'pr') {
+      return !(one.isTitleTried === true && one.title === undefined)
     }
 
     return true
