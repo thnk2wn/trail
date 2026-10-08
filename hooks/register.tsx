@@ -7,6 +7,7 @@ import {
   findRefs,
   groupRefs,
   harvest,
+  htmlTitle,
   buildNumberRefs,
   indexBuildNumbers,
   isMissingTool,
@@ -41,7 +42,7 @@ const PANE = 'trail'
 const TITLE = 'Trail'
 const PANE_COLUMNS = 44
 /** Bump when extraction rules change: a session's trail built by older rules is rebuilt from its transcript. */
-const BUILD = 7
+const BUILD = 8
 const ROLE_TAG: Record<TrailRole, string> = { created: 'new', mentioned: '', updated: 'edited' }
 const MARKS_KEPT = 50
 /** Prompts a person sent (typed, from a phone, an SDK host); the rest are relayed model output. */
@@ -502,7 +503,7 @@ async function transcriptPath($: $, sessionId: string): Promise<string | null> {
  * can hold a ref, then scans them line by line. Streaming, because a long
  * session's transcript is tens of MB and a single plugin read stops at 4 MiB.
  */
-async function streamTranscript($: $, path: string, cfg: TrailConfig, hint: string | null): Promise<{ refs: TrailRef[]; numbers: Map<string, string> }> {
+async function streamTranscript($: $, path: string, cfg: TrailConfig, hint: string | null): Promise<{ refs: TrailRef[]; numbers: Map<string, string>; pages: Map<string, string> }> {
   const scan = transcriptScan(cfg, hint)
   // -a: never let a stray byte make grep call the file binary and stop printing lines.
   const argv = ['grep', '-a', '-F', ...transcriptNeedles(cfg).flatMap(needle => ['-e', needle]), '--', path]
@@ -536,7 +537,7 @@ async function streamTranscript($: $, path: string, cfg: TrailConfig, hint: stri
     throw new Error(`grep ${signal ? `killed by ${signal}` : `exited ${code}`}${errors.trim() ? `: ${errors.trim().slice(0, 200)}` : ''}`)
   }
 
-  return { numbers: scan.buildNumbers(), refs: scan.refs() }
+  return { numbers: scan.buildNumbers(), pages: scan.pages(), refs: scan.refs() }
 }
 
 /**
@@ -572,7 +573,7 @@ async function fillFromHistory($: $, cfg: TrailConfig, style: StatusStyle, isCur
   const path = await transcriptPath($, sessionId).catch(() => null)
   let found: TrailRef[] = []
 
-  let fromFile: { refs: TrailRef[]; numbers: Map<string, string> } | null = null
+  let fromFile: { refs: TrailRef[]; numbers: Map<string, string>; pages: Map<string, string> } | null = null
 
   if (path === null) {
     backfillError = 'no transcript file found for this session'
@@ -587,7 +588,15 @@ async function fillFromHistory($: $, cfg: TrailConfig, style: StatusStyle, isCur
   if (fromFile !== null) {
     // History's build numbers seed the live index, so "#1.0.366" right after a resume still matches.
     indexBuildNumbers(buildNumbers, [...fromFile.numbers].map(([number, id]) => ({ id, number })))
-    found = fromFile.refs
+    found = await Promise.all(
+      fromFile.refs.map(async one => {
+        const page = fromFile?.pages.get(one.id)
+        // The page may be gone (a scratchpad from a session long ended): the publish's own name stays.
+        const title = page === undefined ? undefined : htmlTitle(await $.fs.read(page).catch(() => ''))
+
+        return title === undefined ? one : { ...one, label: title }
+      }),
+    )
     backfillError = undefined
     backfillSource = 'transcript'
   } else {
@@ -2082,6 +2091,16 @@ export const register: Register = (on, options) => {
       const isError = ran.deny !== undefined || ran.isError === true
       let found = harvest(cfg, String(tool), input, ran.text ?? '', repo, isError)
       const command = String((input as { command?: unknown }).command ?? '')
+      const page = (input as { file_path?: unknown; title?: unknown }).file_path
+
+      // A published page is named by its own <title>, which only the file holds.
+      if (String(tool) === 'Artifact' && typeof page === 'string' && /\.html?$/i.test(page) && (input as { title?: unknown }).title === undefined && found.some(one => one.role === 'created')) {
+        const title = htmlTitle(await $.fs.read(page).catch(() => ''))
+
+        if (title !== undefined) {
+          found = found.map(one => (one.role === 'created' && one.id.startsWith('doc:artifact:') ? { ...one, label: title } : one))
+        }
+      }
 
       if (String(tool) === 'Bash' && !isError && /\bteamcity\b/.test(command)) {
         indexBuildNumbers(buildNumbers, teamcityBuildNumbers(ran.text ?? ''))

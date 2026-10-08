@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'claude-code/testing'
 
-import { bashRefs, buildNumberRefs, teamcityFinishLines, teamcityStartJob, capRefs, findRefs, indexBuildNumbers, teamcityBuildNumbers, isMissingTool, isTransientError, parseLimits, sortRefs, mergeRefs, parseDuration, atlassianSiteFromText, incidentOrgFromText, parseJiraCliServer, parseJiraProjectList, parseTeamcityServer, projectsFromIssueKeys, parseProjects, staleRefs, toMarkdown, toolRefs, transcriptNeedles, transcriptRefs, visibleRefs } from './refs'
+import { bashRefs, buildNumberRefs, teamcityFinishLines, teamcityStartJob, capRefs, findRefs, indexBuildNumbers, teamcityBuildNumbers, isMissingTool, isTransientError, parseLimits, sortRefs, mergeRefs, parseDuration, atlassianSiteFromText, incidentOrgFromText, parseJiraCliServer, parseJiraProjectList, parseTeamcityServer, projectsFromIssueKeys, parseProjects, staleRefs, htmlTitle, toMarkdown, toolRefs, transcriptNeedles, transcriptRefs, visibleRefs } from './refs'
 import type { TrailConfig } from './refs'
 import { parseGitStatus, prettyModel, untilLabel } from './status'
 
@@ -187,6 +187,27 @@ describe('toolRefs', () => {
     const comment = toolRefs('mcp__claude_ai_Atlassian__addCommentToJiraIssue', { commentBody: 'see PROJ-7', issueIdOrKey: 'PROJ-6' }, '', CFG)
 
     expect(comment.map(f => `${f.role}:${f.label}`)).toEqual(['updated:PROJ-6', 'mentioned:PROJ-7', 'mentioned:PROJ-6'])
+  })
+
+  test('only an Artifact publish makes an artifact, named by its title or folder', async () => {
+    const catalog = 'For a dashboard, publish with `type_url`: "https://claude.ai/artifact/TypeDashboard01" — type_url: https://claude.ai/artifact/TypeDocs000001'
+
+    expect(toolRefs('Artifact', { action: 'quickstart', intent: 'other' }, catalog, CFG)).toEqual([])
+    expect(toolRefs('Artifact', { action: 'list' }, catalog, CFG)).toEqual([])
+
+    const published = toolRefs(
+      'Artifact',
+      { file_path: '/tmp/x/scratchpad/lit-meeting/index.html' },
+      'Published /tmp/x/scratchpad/lit-meeting/index.html at https://claude.ai/artifact/W2EWFRr9wosNN (Version 3) see also https://claude.ai/artifact/Other0000000',
+      CFG,
+    )
+
+    expect(published.map(f => `${f.role}:${f.label}:${f.href}`)).toEqual(['created:lit-meeting:https://claude.ai/artifact/W2EWFRr9wosNN'])
+
+    const fromType = toolRefs('Artifact', { title: 'Q3 plan', type_url: 'https://claude.ai/artifact/TypeDocs000001' }, 'Created from https://claude.ai/artifact/TypeDocs000001 at https://claude.ai/artifact/NewDoc000001', CFG)
+
+    expect(fromType.map(f => `${f.role}:${f.label}:${f.href}`)).toEqual(['created:Q3 plan:https://claude.ai/artifact/NewDoc000001'])
+    expect(htmlTitle('<head><title>\n  Lit Ranking &amp; Rules </title></head>')).toBe('Lit Ranking & Rules')
   })
 })
 

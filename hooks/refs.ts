@@ -576,9 +576,25 @@ export function toolRefs(tool: string, input: unknown, output: string, cfg: Trai
   } else if (/incident_io__incident_create$/.test(tool)) {
     found.push(...findRefs(output, cfg, 'created').filter(one => one.kind === 'inc').slice(0, 1))
   } else if (tool === 'Artifact') {
-    const label = artifactLabel(input)
+    // Only a publish makes or updates an artifact, and its result names it first
+    // ("Published … at <url>"). Quickstart, list and read results are catalogs of
+    // type and gallery links, not the session's work.
+    const { type_url: typeUrl, ...rest } = (input ?? {}) as { type_url?: unknown }
+    const typeIds = new Set(findRefs(String(typeUrl ?? ''), cfg).map(one => one.id))
 
-    found.push(...findRefs(output, cfg, 'created').filter(one => one.id.startsWith('doc:artifact:')).map(one => ({ ...one, label: label ?? one.label })))
+    if (isArtifactPublish(input)) {
+      const label = artifactLabel(input)
+      const made = findRefs(output, cfg, 'created').find(one => one.id.startsWith('doc:artifact:') && !typeIds.has(one.id))
+
+      if (made !== undefined) {
+        found.push({ ...made, label: label ?? made.label })
+      }
+    }
+
+    // A type_url is a template link, never the session's own artifact.
+    found.push(...findRefs(JSON.stringify(rest), cfg))
+
+    return found
   }
 
   found.push(...findRefs(inputText, cfg))
@@ -599,18 +615,43 @@ export function toolRefs(tool: string, input: unknown, output: string, cfg: Trai
   return found
 }
 
+function isArtifactPublish(input: unknown): boolean {
+  const fields = (input ?? {}) as { action?: unknown; asset?: unknown }
+
+  return (fields.action === undefined || fields.action === 'publish') && fields.asset !== true
+}
+
+/** An artifact's name from its publish call: the title given, else its page's file (a folder's `index` names the folder). */
 function artifactLabel(input: unknown): string | undefined {
   if (typeof input !== 'object' || input === null) {
     return undefined
   }
 
-  const path = (input as { file_path?: unknown }).file_path
+  const { file_path: path, title } = input as { file_path?: unknown; title?: unknown }
+
+  if (typeof title === 'string' && title.trim() !== '') {
+    return title.trim()
+  }
 
   if (typeof path !== 'string') {
     return undefined
   }
 
-  return path.split('/').pop()?.replace(/\.(html|md)$/, '')
+  const parts = path.split('/').filter(Boolean)
+  const name = parts.pop()?.replace(/\.(html|md)$/, '')
+
+  return name === 'index' ? (parts.pop() ?? name) : name
+}
+
+/** The `<title>` of an HTML page, when it has one. */
+export function htmlTitle(html: string): string | undefined {
+  const raw = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1]?.replace(/\s+/g, ' ').trim()
+
+  if (!raw) {
+    return undefined
+  }
+
+  return raw.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
 }
 
 /** Folds what was found into the list: stronger roles win, hits count up, dismissals stick. */
@@ -630,7 +671,8 @@ export function mergeRefs(list: readonly TrailRef[], found: readonly Found[], no
     }
 
     const isStronger = ROLE_RANK[one.role] < ROLE_RANK[had.role]
-    const isBetterLabel = had.label.startsWith('Artifact ') && !one.label.startsWith('Artifact ')
+    // An artifact takes the name from its latest publish; a bare link to it keeps that name.
+    const isBetterLabel = one.id.startsWith('doc:artifact:') && !one.label.startsWith('Artifact ')
 
     byId.set(one.id, {
       ...had,
@@ -906,12 +948,14 @@ export function transcriptNeedles(cfg: TrailConfig): string[] {
 export function transcriptScan(
   cfg: TrailConfig,
   hint: string | null,
-): { line: (line: string) => void; refs: () => TrailRef[]; buildNumbers: () => Map<string, string> } {
+): { line: (line: string) => void; refs: () => TrailRef[]; buildNumbers: () => Map<string, string>; pages: () => Map<string, string> } {
   const hintAt = new RegExp(
     ['github\\.com/', 'buildConfiguration/', 'viewLog\\.html', '\\bteamcity\\s', '\\bgh\\s+run\\b', 'actions/runs/', '\\.atlassian\\.net/wiki/', 'claude\\.ai/', '\\bgh\\s+pr\\b', '\\bINC-\\d', ...cfg.jiraProjects.map(p => `\\b${p}-\\d`)].join('|'),
   )
   const pending = new Map<string, Block>()
   const buildNumbers = new Map<string, string>()
+  // Artifact id → the HTML page it was last published from, whose <title> names it.
+  const pages = new Map<string, string>()
   let list: TrailRef[] = []
   let at = 0
 
@@ -963,7 +1007,16 @@ export function transcriptScan(
             indexBuildNumbers(buildNumbers, teamcityBuildNumbers(resultText(block.content)))
           }
 
-          found.push(...harvest(cfg, use.name ?? '', use.input, resultText(block.content), hint, block.is_error === true))
+          const made = harvest(cfg, use.name ?? '', use.input, resultText(block.content), hint, block.is_error === true)
+          const page = (use.input as { file_path?: unknown } | null)?.file_path
+
+          if (use.name === 'Artifact' && typeof page === 'string' && /\.html?$/i.test(page)) {
+            for (const one of made.filter(m => m.role === 'created' && m.id.startsWith('doc:artifact:'))) {
+              pages.set(one.id, page)
+            }
+          }
+
+          found.push(...made)
         }
       }
     }
@@ -971,7 +1024,7 @@ export function transcriptScan(
     list = mergeRefs(list, found, at)
   }
 
-  return { buildNumbers: () => buildNumbers, line, refs: () => list }
+  return { buildNumbers: () => buildNumbers, line, pages: () => pages, refs: () => list }
 }
 
 /** `transcriptScan` over a whole transcript held in memory. */
