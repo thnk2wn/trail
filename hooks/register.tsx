@@ -41,9 +41,11 @@ const PANE = 'trail'
 const TITLE = 'Trail'
 const PANE_COLUMNS = 44
 /** Bump when extraction rules change: a session's trail built by older rules is rebuilt from its transcript. */
-const BUILD = 6
+const BUILD = 7
 const ROLE_TAG: Record<TrailRole, string> = { created: 'new', mentioned: '', updated: 'edited' }
 const MARKS_KEPT = 50
+/** Prompts a person sent (typed, from a phone, an SDK host); the rest are relayed model output. */
+const PERSON_ORIGINS: ReadonlySet<string> = new Set(['composer', 'bridge', 'sdk'])
 
 const refsAtom = atom({ plugin: 'trail', key: 'refs' } as const, [])
 const statusAtom = atom({ plugin: 'trail', key: 'status' } as const, null)
@@ -598,7 +600,9 @@ async function fillFromHistory($: $, cfg: TrailConfig, style: StatusStyle, isCur
     for (const msg of messages) {
       at += 1
 
-      const fromMsg = [...findRefs(msg.text, cfg)]
+      // As in the transcript pass, injected user rows (notifications, peer and subagent messages) aren't read.
+      const isInjected = msg.role === 'user' && /^(?:<|Another Claude session sent a message)/.test(msg.text)
+      const fromMsg = isInjected ? [] : [...findRefs(msg.text, cfg)]
 
       for (const use of msg.toolUses) {
         fromMsg.push(...harvest(cfg, use.tool, use.input, use.text ?? '', hint, use.isError === true))
@@ -2020,7 +2024,11 @@ export const register: Register = (on, options) => {
   })
 
   on('prompt.submit', ($, e, next) => {
-    queue(findRefs(e.text, cfg))
+    // Only what a person sent: a subagent's report, a peer's message or a task notification
+    // quotes docs and examples (`INC-123`, `…/repo/pull/123`) that aren't this session's work.
+    if (PERSON_ORIGINS.has(e.origin.kind)) {
+      queue(findRefs(e.text, cfg))
+    }
 
     // Sending a message means you've seen the marks: clear them now (scheduled, so the prompt
     // isn't held up). What this turn adds or changes is marked when it lands, until the next one.

@@ -73,6 +73,18 @@ describe('bashRefs', () => {
   test('ignores tool output except for creates', async () => {
     expect(bashRefs('gh pr list', 'https://github.com/acme/api/pull/1 PROJ-1', CFG, null)).toEqual([])
   })
+
+  test('stand-in numbers in a command are trial runs, not work', async () => {
+    const found = bashRefs(
+      'scripts/attach.sh --key INC-1 https://x; scripts/attach.sh INC-1673 https://github.com/acme/api/pull/999/files https://github.com/acme/api/pull/29',
+      '',
+      CFG,
+      null,
+    )
+
+    expect(found.map(f => f.label)).toEqual(['api #29', 'INC-1673'])
+    expect(bashRefs('gh pr view 123 --repo acme/api', '', CFG, null).map(f => f.label)).toEqual(['api #123'])
+  })
 })
 
 describe('teamcityRefs', () => {
@@ -197,6 +209,22 @@ describe('mergeRefs', () => {
 
     expect(visibleRefs(list, true).map(r => r.label)).toEqual(['a #1', 'PROJ-829'])
     expect(visibleRefs(list, false).map(r => r.label)).toEqual(['a #1', 'PROJ-829', 'PROJ-999'])
+  })
+
+  test('PRs show until gh says they do not exist', async () => {
+    const list = mergeRefs([], findRefs('https://github.com/acme/a/pull/7 https://github.com/acme/a/pull/8 https://github.com/acme/a/pull/9', CFG), 1).map(r =>
+      r.label === 'a #8' ? { ...r, isTitleTried: true, title: 'Real' } : r.label === 'a #9' ? { ...r, isTitleTried: true } : r,
+    )
+
+    expect(visibleRefs(list, true).map(r => r.label)).toEqual(['a #7', 'a #8'])
+    expect(visibleRefs(list, true, { gh: false, incident: true, teamcity: true }).map(r => r.label)).toEqual(['a #7', 'a #8', 'a #9'])
+  })
+
+  test('a Confluence link ending a sentence drops the full stop', async () => {
+    const [one] = findRefs('See https://acme.atlassian.net/wiki/spaces/EN/pages/457637890/Incident.io+Response.', CFG)
+
+    expect(one?.label).toBe('Incident.io Response')
+    expect(one?.href).toBe('https://acme.atlassian.net/wiki/spaces/EN/pages/457637890/Incident.io+Response')
   })
 
   test('builds show only once a lookup confirmed them, unless their CLI is missing', async () => {

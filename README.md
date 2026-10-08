@@ -125,7 +125,10 @@ a session already had when it loads.
 
 - From your prompts, Claude's replies and tool calls. What Claude writes into
   files (Write/Edit, heredoc bodies) is ignored, so test fixtures and examples
-  don't show up.
+  don't show up. So are subagent reports, messages from other sessions and task
+  notifications, which quote docs and examples, and stand-in numbers in a shell
+  command (`INC-1`, `…/pull/999`, `#123`) that are trial runs of a script.
+- A PR that `gh` says doesn't exist is dropped.
 - `gh pr create`, `createJiraIssue`, incident creation and artifact publishes
   are **created**; `gh pr merge/comment/review/edit` and Jira edits,
   transitions and comments are **edited** (only the issue acted on, not every
